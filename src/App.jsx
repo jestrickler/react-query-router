@@ -40,7 +40,7 @@ const Home = () => <h1>Home</h1>
 const queryClient = new QueryClient()
 const api = axios.create({
   baseURL: 'https://jsonplaceholder.typicode.com',
-  headers: { 'Content-type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' }
 })
 
 const getAlbumsQuery = (page = 1) => {
@@ -58,12 +58,17 @@ const getAlbumsQuery = (page = 1) => {
     }
   }
 }
-const albumsLoader = ({ request }) => {
+const albumsLoader = async ({ request }) => {
+  await new Promise((r) => setTimeout(r, 3000))
   const page = new URL(request.url).searchParams.get('page') || 1
   console.log('albumsLoader', page)
   return defer({
     response: queryClient.ensureQueryData(getAlbumsQuery(page))
   })
+}
+const Fallback = () => {
+  console.log('Suspense Fallback')
+  return <h2>Loading...</h2>
 }
 const Albums = () => {
   const deferred = useLoaderData()
@@ -76,7 +81,7 @@ const Albums = () => {
         </Link>
       ))}
       <button onClick={() => queryClient.clear()}>Clear</button>
-      <Suspense fallback={<h2>Loading...</h2>}>
+      <Suspense fallback={<Fallback />}>
         <Await resolve={deferred.response}>
           <AlbumsList />
         </Await>
